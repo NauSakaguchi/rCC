@@ -2,6 +2,7 @@
 
 use crate::token::TokenKind::{TK_RESERVED, TK_NUM, TK_EOF};
 
+#[allow(non_camel_case_types)]
 pub enum TokenKind {
     TK_RESERVED,
     TK_NUM,
@@ -48,8 +49,7 @@ impl Token {
 }
 
 pub fn tokenize(program: &String) -> Vec<Token> {
-    let mut index: usize = 0;
-    let mut chars:Vec<char> = program.chars().collect();
+    let chars:Vec<char> = program.chars().collect();
     let mut token_list = Vec::with_capacity(program.len() / 4);
     let mut val = String::with_capacity(10);
 

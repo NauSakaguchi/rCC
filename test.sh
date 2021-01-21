@@ -22,8 +22,11 @@ assert() {
 
 
 #test code
+#assert $expected $input
 assert 0 0
 
 assert 42 42
+
+assert 23 "10 + 1 -2+ 15 -1"
 
 echo OK
