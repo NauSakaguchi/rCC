@@ -3,6 +3,7 @@
 
 use std::env;
 use rCC::token::tokenize;
+use rCC::node::{Node, NodeKind};
 
 fn main() {
     let mut index = 0;
@@ -17,13 +18,8 @@ fn main() {
 
     let token_list = tokenize(&program);
 
-    // let token1 = token::Token::new(TOKEN_NUM, Some(10), None);
-    // println!("{}", program);
 
-    // for arg in args.iter() {
-    //     program.push(arg);
-    // }
-
+    //print an assemble code from here
     println!(".intel_syntax noprefix");
     println!(".globl main");
     println!("main:");
