@@ -2,7 +2,6 @@
 
 
 use std::env;
-use rCC::token;
 use rCC::token::tokenize;
 
 fn main() {
@@ -32,6 +31,6 @@ fn main() {
 
 
 
-
     println!("  ret");
+    // println!("{}", token_list[1].get_reserved());
 }

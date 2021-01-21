@@ -4,7 +4,8 @@ assert() {
   expected="$1"
   input="$2"
 
-  cargo run "$input" > tmp.s
+  cargo build 2> output.txt
+  ./target/debug/rCC "$input"> tmp.s
   cc -o tmp tmp.s
   ./tmp
   actual="$?"

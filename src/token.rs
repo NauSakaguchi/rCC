@@ -26,19 +26,23 @@ impl Token {
     pub fn get_val(&self) -> isize {
         match self.val {
             Some(x) => x,
-            None => panic!()
+            None => panic!("Expected number, but no value to return")
         }
     }
 
-    // pub fn get_reserved(&self) -> &String {
-    //     match self.reserved {
-    //         Some(x) => &x,
-    //         None => panic!(),
-    //     }
-    // }
+    pub fn get_reserved(&self) -> &String {
+        match self.reserved.as_ref() {
+            Some(x) => x,
+            None => panic!("\n\nnote: Expected a reserved word, but no word to return.\nToken Kind: {}\n\n", self.get_kind()),
+        }
+    }
 
-    pub fn get_kind(&self) -> &TokenKind {
-        &self.kind
+    pub fn get_kind(&self) -> String {
+        match self.kind {
+            TK_EOF => "TK_EOF".to_string(),
+            TK_NUM => "TK_NUM".to_string(),
+            TK_RESERVED => "TK_RESERVED".to_string(),
+        }
     }
 
 }
