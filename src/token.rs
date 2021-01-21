@@ -34,17 +34,43 @@ impl Token {
     pub fn get_reserved(&self) -> &String {
         match self.reserved.as_ref() {
             Some(x) => x,
-            None => panic!("\n\nnote: Expected a reserved word, but no word to return.\nToken Kind: {}\n\n", self.get_kind()),
+            None => panic!("\n\nnote: Expected a reserved word, but no word to return.\nToken Kind: {}\n\n", self.get_kind_as_string()),
         }
     }
 
-    pub fn get_kind(&self) -> String {
+    pub fn get_kind_as_string(&self) -> String {
         match self.kind {
             TK_EOF => "TK_EOF".to_string(),
             TK_NUM => "TK_NUM".to_string(),
             TK_RESERVED => "TK_RESERVED".to_string(),
         }
     }
+
+    pub fn get_kind(&self) -> &TokenKind {
+        &self.kind
+    }
+
+    pub fn is_end(&self) -> bool {
+        match &self.kind {
+            TK_EOF => true,
+            _ => false
+        }
+    }
+
+    pub fn is_reserved(&self) -> bool {
+        match &self.kind {
+            TK_RESERVED => true,
+            _ => false
+        }
+    }
+
+    pub fn is_num(&self) -> bool {
+        match &self.kind {
+            TK_NUM => true,
+            _ => false
+        }
+    }
+
 
 }
 

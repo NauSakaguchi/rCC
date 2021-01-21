@@ -1,4 +1,4 @@
-use crate::node::NodeKind::ND_NUM;
+use crate::node::NodeKind::{ND_NUM, ND_ADD, ND_SUB, ND_MUL, ND_DIV};
 
 pub enum NodeKind {
     ND_ADD,
@@ -8,56 +8,58 @@ pub enum NodeKind {
     ND_NUM,
 }
 
-pub struct Node<'a> {
+pub struct Node {
     kind: NodeKind,
-    lhs: Option<Box<&'a Node<'a>>>,
-    rhs: Option<Box<&'a Node<'a>>>,
+    lhs: Option<Box<Node>>,
+    rhs: Option<Box<Node>>,
     val: Option<isize>,
 }
 
-impl <'a> Node <'a> {
-    pub fn new(kind: NodeKind, lhs: &'a Node, rhs: &'a Node) -> Self {
-        Self {
+impl Node {
+    pub fn new(kind: NodeKind, lhs: Box<Node>, rhs: Box<Node>) -> Box<Self> {
+        let node = Self {
             kind,
-            lhs: Option::from(Box::from(lhs)),
-            rhs: Option::from(Box::from(rhs)),
+            lhs: Option::from(lhs),
+            rhs: Option::from(rhs),
             val: None,
-        }
+        };
+        Box::new(node)
     }
 
-    pub fn new_num(val: isize) -> Self {
-        Self {
+    pub fn new_num(val: isize) -> Box<Self> {
+        let node = Self {
             kind: ND_NUM,
             lhs: None,
             rhs: None,
             val: Option::from(val),
-        }
+        };
+        Box::new(node)
     }
 
-    fn has_lhs(&self) -> bool {
+    pub fn has_lhs(&self) -> bool {
         match self.lhs {
             Some(_) => true,
             None => false,
         }
     }
 
-    fn has_rhs(&self) -> bool {
+    pub fn has_rhs(&self) -> bool {
         match self.rhs {
             Some(_) => true,
             None => false,
         }
     }
 
-    pub fn get_rhs(&self) -> &Node {
+    pub fn get_rhs(&self) -> &Box<Node> {
         match self.rhs.as_ref() {
-            Some(x) => **x,
+            Some(x) => x,
             None => panic!(),
         }
     }
 
-    pub fn get_lhs(&self) -> &Node {
+    pub fn get_lhs(&self) -> &Box<Node> {
         match self.lhs.as_ref() {
-            Some(x) => **x,
+            Some(x) => x,
             None => panic!(),
         }
     }
@@ -66,6 +68,23 @@ impl <'a> Node <'a> {
         match self.val {
             Some(x) => x,
             None => panic!(),
+        }
+    }
+
+    pub fn get_kind(&self) -> NodeKind {
+        match self.kind {
+            ND_NUM => ND_NUM,
+            ND_ADD => ND_ADD,
+            ND_SUB => ND_SUB,
+            ND_MUL => ND_MUL,
+            ND_DIV => ND_DIV
+        }
+    }
+
+    pub fn is_num(&self) -> bool {
+        match self.kind {
+            ND_NUM => true,
+            _ => false,
         }
     }
 
@@ -80,20 +99,31 @@ mod tests {
 
     fn test_for_Node() {
         //test
-        let num_lhs = Node::new_num(6);
-        let num_rhs = Node::new_num(26);
+        let num_lhs = Node{
+            kind: NodeKind::ND_NUM,
+            lhs: None,
+            rhs: None,
+            val: Option::from(6),
+        };
+        let num_rhs = Node{
+            kind: NodeKind::ND_NUM,
+            lhs: None,
+            rhs: None,
+            val: Option::from(26),
+        };
 
-        let node = Node::new(NodeKind::ND_MUL, &num_lhs, &num_rhs);
+        let node = Node::new(NodeKind::ND_MUL, Box::new(num_lhs), Box::new(num_rhs));
         let node2 = Node::new_num(36);
-        let node3 = Node::new(NodeKind::ND_ADD, &node, &node2);
+        let node3 = Node::new(NodeKind::ND_ADD, node, node2);
 
-        assert_eq!(6, node.get_lhs().get_num());
-        assert_eq!(num_lhs.get_num(), node.get_lhs().get_num());
+        // assert_eq!(6, node.get_lhs().get_num());
+        // assert_eq!(num_lhs.get_num(), node.get_lhs().get_num());
+        //
+        // assert_eq!(26, node.get_rhs().get_num());
+        // assert_eq!(num_rhs.get_num(), node.get_rhs().get_num());
 
-        assert_eq!(26, node.get_rhs().get_num());
-        assert_eq!(num_rhs.get_num(), node.get_rhs().get_num());
-
-        assert_eq!(num_lhs.get_num(), node3.get_lhs().get_lhs().get_num());
-        assert_eq!(num_rhs.get_num(), node3.get_lhs().get_rhs().get_num());
+        assert_eq!(6, node3.get_lhs().get_lhs().get_num());
+        assert_eq!(26, node3.get_lhs().get_rhs().get_num());
+        assert_eq!(36, node3.get_rhs().get_num());
     }
 }

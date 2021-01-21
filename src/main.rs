@@ -1,9 +1,10 @@
 #![allow(non_snake_case)]
 
-
 use std::env;
 use rCC::token::tokenize;
 use rCC::node::{Node, NodeKind};
+use rCC::token::TokenKind::TK_EOF;
+use rCC::{parser, generator};
 
 fn main() {
     let mut index = 0;
@@ -17,29 +18,32 @@ fn main() {
     let program = args[1..].join(" ");
 
     let token_list = tokenize(&program);
-
+    let nodes = parser::parse(&token_list);
 
     //print an assemble code from here
     println!(".intel_syntax noprefix");
     println!(".globl main");
     println!("main:");
 
-    println!("  mov rax, {}", token_list[index].get_val());
-    index += 1;
+    generator::gen(&nodes);
 
-    while token_list[index].get_kind() != "TK_EOF" {
-        if token_list[index].get_reserved() == "+" {
-            index += 1;
-            println!("  add rax, {}", token_list[index].get_val());
-            index+= 1;
-        } else if token_list[index].get_reserved() == "-" {
-            index += 1;
-            println!("  sub rax, {}", token_list[index].get_val());
-            index+= 1;
-        } else {
-            panic!();
-        }
-    }
+    // println!("  mov rax, {}", token_list[index].get_val());
+    // index += 1;
+    //
+    // while !token_list[index].is_end() {
+    //     if token_list[index].get_reserved() == "+" {
+    //         index += 1;
+    //         println!("  add rax, {}", token_list[index].get_val());
+    //         index+= 1;
+    //     } else if token_list[index].get_reserved() == "-" {
+    //         index += 1;
+    //         println!("  sub rax, {}", token_list[index].get_val());
+    //         index+= 1;
+    //     } else {
+    //         panic!();
+    //     }
+    // }
 
-    println!("  ret");
+    println!("\tpop rax");
+    println!("\tret");
 }
