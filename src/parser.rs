@@ -1,6 +1,6 @@
 use crate::node::Node;
 use crate::token::Token;
-use crate::node::NodeKind::{ND_MUL, ND_DIV, ND_ADD, ND_SUB, ND_EQ, ND_NEQ};
+use crate::node::NodeKind::{ND_MUL, ND_DIV, ND_ADD, ND_SUB, ND_EQ, ND_NEQ, ND_GT, ND_GTE, ND_LT, ND_LTE};
 
 pub fn parse(token_list: &Vec<Token>) -> Box<Node> {
     let mut index: usize = 0;
@@ -36,16 +36,16 @@ fn relational(token_list: &Vec<Token>, index: &mut usize) -> Box<Node> {
         if token_list[*index].is_reserved() {
             if token_list[*index].get_reserved() == "<" {
                 *index += 1; //consume "<"
-                node = Node::new(ND_ADD, node, add(token_list, index));
+                node = Node::new(ND_GT, node, add(token_list, index));
             } else if token_list[*index].get_reserved() == "<=" {
                 *index += 1; //consume "<="
-                node = Node::new(ND_SUB, node, add(token_list, index));
+                node = Node::new(ND_GTE, node, add(token_list, index));
             } else if token_list[*index].get_reserved() == ">" {
                 *index += 1; //consume ">"
-                node = Node::new(ND_SUB, node, add(token_list, index));
+                node = Node::new(ND_LT, add(token_list, index), node);
             } else if token_list[*index].get_reserved() == ">=" {
                 *index += 1; //consume ">="
-                node = Node::new(ND_SUB, node, add(token_list, index));
+                node = Node::new(ND_LTE, add(token_list, index), node);
             } else {
                 break 'relational
             }

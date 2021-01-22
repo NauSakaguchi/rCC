@@ -29,19 +29,21 @@ assert 42 42
 
 assert 23 "10 + 1 -2+ 15 -1"
 
+assert 10 "2 * 3 + 6 - 4 / 2"
 assert 3 "1 * 2 +3/4 +1"
-
 assert 2 "1 * (2 +3) /4 +1"
-
 assert 1 "1 * -(-3 +1) /4 +1"
-
 assert 3 "1 * -3 * (-1)"
 
-#assert 0 "10 == 20"
-#assert 1 "10 != 20"
-#assert 0 "10 > 20"
-#assert 1 "10 < 20"
-#assert 1 "10 <= 20"
-#assert 0 "10 >= 20"
+assert 0 "10 == 20"
+assert 1 "10 == 10"
+assert 1 "10 != 20"
+assert 0 "10 != 10"
+assert 0 "10 > 10"
+assert 0 "10 < 10"
+assert 1 "10 <= 20"
+assert 1 "10 <= 10"
+assert 0 "10 >= 20"
+assert 1 "10 >= 10"
 
 echo OK
