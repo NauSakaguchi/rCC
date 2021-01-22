@@ -76,33 +76,129 @@ impl Token {
 
 pub fn tokenize(program: &String) -> Vec<Token> {
     let chars:Vec<char> = program.chars().collect();
+    let mut index: usize = 0;
     let mut token_list = Vec::with_capacity(program.len() / 4);
-    let mut val = String::with_capacity(10);
 
-    'tokenize: for (index, character) in chars.iter().enumerate() {
-        if *character == ' ' {
+    'tokenize: while index < chars.len() {
+        let mut word = String::with_capacity(2);
+
+        if chars[index] == ' ' {
+            index += 1;
             continue 'tokenize
-        } else if character.is_numeric() {
-            val.push(*character);
-            if index + 1 < chars.len() { //if (index + 1) is not at end,
-                if !chars[index + 1].is_numeric() { // check if next char is numeric
-                    let token = Token::new(TK_NUM, Some(val.parse::<isize>().unwrap()), None);
-                    token_list.push(token);
-                    val.clear();
-                }
-            } else {
-                let token = Token::new(TK_NUM, Some(val.parse::<isize>().unwrap()), None);
-                token_list.push(token);
-            }
-        } else {
-            val.push(*character);
-            let token = Token::new(TK_RESERVED, None, Some(val.clone()));
+        } else if chars[index].is_numeric() {
+            index = consume_numeric(&mut word, &chars, index);
+            let token = Token::new(TK_NUM, Some(word.parse::<isize>().unwrap()), None);
             token_list.push(token);
-            val.clear();
+        } else if is_reserved(&chars[index]) {
+            index = consume_reserved(&mut word, &chars, index);
+            let token = Token::new(TK_RESERVED, None, Some(word.clone()));
+            token_list.push(token);
+        } else {
+            index = consume_identifier(&mut word, &chars, index);
+            let token = Token::new(TK_RESERVED, None, Some(word.clone()));
+            token_list.push(token);
         }
+
+        word.clear();
     }
 
     token_list.push(Token::new(TK_EOF, None, None));
 
     token_list
 }
+
+fn consume_numeric(word: &mut String, chars: &Vec<char>, mut index: usize) -> usize {
+    word.push(chars[index]);
+    index += 1;
+    
+    'numeric: loop {
+        match chars.get(index) {
+            Some(x) => {
+                if x.is_numeric() {
+                    word.push(chars[index]);
+                    index += 1;
+                } else {
+                    break 'numeric
+                }
+            },
+            None => break 'numeric,
+        }
+    }
+    
+    index
+}
+
+fn consume_reserved(word: &mut String, chars: &Vec<char>, mut index: usize) -> usize {
+    word.push(chars[index]);
+    index += 1;
+
+    match chars.get(index) {
+        Some(x) => {
+            match chars[index - 1] {
+                '+' => return index,
+                '-' => return index,
+                '*' => return index,
+                '/' | '(' | ')' => return index,
+                '=' | '!' => {
+                    match x {
+                        '=' => {
+                            word.push(*x);
+                            index += 1;
+                            return index
+                        }
+                        _ => return index
+                    };
+                },
+                '>' | '<' => {
+                    match x {
+                        '=' => {
+                            word.push(*x);
+                            index += 1;
+                            return index
+                        }
+                        _ => return index
+                    };
+                },
+                _ => return index,
+            };
+        },
+        None => return index
+    };
+}
+
+fn is_reserved(ch: &char) -> bool {
+    match ch {
+        '+' => true,
+        '-' => true,
+        '*' => true,
+        '/' => true,
+        '=' => true,
+        '!' => true,
+        '>' => true,
+        '<' => true,
+        '(' => true,
+        ')' => true,
+        _ => false,
+    }
+}
+
+fn consume_identifier(word: &mut String, chars: &Vec<char>, mut index: usize) -> usize {
+    word.push(chars[index]);
+    index += 1;
+
+    'identifier: loop {
+        match chars.get(index) {
+            Some(x) => {
+                if !is_reserved(x) || *x != ' ' {
+                    word.push(chars[index]);
+                    index += 1;
+                } else {
+                    break 'identifier
+                }
+            },
+            None => break 'identifier,
+        }
+    }
+    index
+}
+
