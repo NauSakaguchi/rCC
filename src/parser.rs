@@ -30,16 +30,16 @@ fn expr(token_list: &Vec<Token>, index: &mut usize) -> Box<Node> {
 }
 
 fn mul(token_list: &Vec<Token>, index: &mut usize) -> Box<Node> {
-    let mut node = primary(token_list, index); //consume primary
+    let mut node = unary(token_list, index);
 
     'mul: loop {
         if token_list[*index].is_reserved() {
             if token_list[*index].get_reserved() == "*" {
                 *index += 1; //consume "*"
-                node = Node::new(ND_MUL, node, primary(token_list, index));
+                node = Node::new(ND_MUL, node, unary(token_list, index));
             } else if token_list[*index].get_reserved() == "/" {
                 *index += 1; //consume "/"
-                node = Node::new(ND_DIV, node, primary(token_list, index));
+                node = Node::new(ND_DIV, node, unary(token_list, index));
             } else {
                 break 'mul
             }
@@ -51,8 +51,21 @@ fn mul(token_list: &Vec<Token>, index: &mut usize) -> Box<Node> {
     node
 }
 
-fn primary(token_list: &Vec<Token>, index: &mut usize) -> Box<Node> {
+fn unary(token_list: &Vec<Token>, index: &mut usize) -> Box<Node> {
+    if token_list[*index].is_reserved() {
+        if token_list[*index].get_reserved() == "+" {
+            *index += 1; //consume "+"
+            return primary(token_list, index)
+        } else if token_list[*index].get_reserved() == "-" {
+            *index += 1; //consume "-"
+            return Node::new(ND_SUB, Node::new_num(0), primary(token_list, index));
+        }
+    }
 
+    primary(token_list, index)
+}
+
+fn primary(token_list: &Vec<Token>, index: &mut usize) -> Box<Node> {
     if token_list[*index].is_reserved() {
         if token_list[*index].get_reserved() == "(" {
             *index += 1; //consume "("
@@ -73,16 +86,14 @@ fn primary(token_list: &Vec<Token>, index: &mut usize) -> Box<Node> {
         *index += 1; //consume num
         node
     } else {
-        panic!();
+        panic!("This token is not ND_NUM nor ND_RESERVED.\nThis token.kind is: {}",
+               token_list[*index].get_kind_as_string());
     }
 }
 
 
 #[cfg(test)]
 mod tests {
-    // use crate::node::NodeKind::ND_ADD;
-    // use crate::node::{Node, NodeKind};
-
     use crate::token::tokenize;
     use crate::parser;
     use crate::node::NodeKind::ND_ADD;
@@ -102,7 +113,6 @@ mod tests {
         let nodes = parser::parse(&token_list);
 
         assert_eq!(true, nodes.get_rhs().is_num());
-
 
     }
 }

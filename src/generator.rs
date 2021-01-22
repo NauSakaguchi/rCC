@@ -1,4 +1,4 @@
-use crate::node::NodeKind::{ND_NUM, ND_ADD, ND_SUB, ND_MUL, ND_DIV};
+use crate::node::NodeKind::{ND_ADD, ND_SUB, ND_MUL, ND_DIV};
 use crate::node::Node;
 
 pub fn gen(nodes: &Box<Node>) {
@@ -21,7 +21,7 @@ pub fn gen(nodes: &Box<Node>) {
             println!("\tcqo");
             println!("\tidiv rdi");
         },
-        _ => panic!()
+        _ => panic!("Unexpected node kind")
     }
 
     println!("\tpush rax");

@@ -1,5 +1,6 @@
 use crate::node::NodeKind::{ND_NUM, ND_ADD, ND_SUB, ND_MUL, ND_DIV};
 
+#[allow(non_camel_case_types)]
 pub enum NodeKind {
     ND_ADD,
     ND_SUB,

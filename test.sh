@@ -4,7 +4,6 @@ assert() {
   expected="$1"
   input="$2"
 
-  cargo build 2> output.txt
   ./target/debug/rCC "$input"> tmp.s
   cc -o tmp tmp.s
   ./tmp
@@ -20,6 +19,7 @@ assert() {
   fi
 }
 
+cargo build 2> output.txt
 
 #test code
 #assert $expected $input
@@ -32,5 +32,9 @@ assert 23 "10 + 1 -2+ 15 -1"
 assert 3 "1 * 2 +3/4 +1"
 
 assert 2 "1 * (2 +3) /4 +1"
+
+assert 1 "1 * -(-3 +1) /4 +1"
+
+assert 3 "1 * -3 * (-1)"
 
 echo OK
