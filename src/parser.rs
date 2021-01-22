@@ -1,16 +1,66 @@
 use crate::node::Node;
 use crate::token::Token;
-use crate::node::NodeKind::{ND_MUL, ND_DIV, ND_ADD, ND_SUB};
+use crate::node::NodeKind::{ND_MUL, ND_DIV, ND_ADD, ND_SUB, ND_EQ, ND_NEQ};
 
 pub fn parse(token_list: &Vec<Token>) -> Box<Node> {
     let mut index: usize = 0;
-    expr(token_list, &mut index)
+    equality(token_list, &mut index)
 }
 
-fn expr(token_list: &Vec<Token>, index: &mut usize) -> Box<Node> {
+fn equality(token_list: &Vec<Token>, index: &mut usize) -> Box<Node> {
+    let mut node = relational(token_list, index);
+
+    'equality: loop {
+        if token_list[*index].is_reserved() {
+            if token_list[*index].get_reserved() == "==" {
+                *index += 1; //consume "=="
+                node = Node::new(ND_EQ, node, relational(token_list, index));
+            } else if token_list[*index].get_reserved() == "!=" {
+                *index += 1; //consume "!="
+                node = Node::new(ND_NEQ, node, relational(token_list, index));
+            } else {
+                break 'equality
+            }
+        } else {
+            break 'equality
+        }
+    }
+
+    node
+}
+
+fn relational(token_list: &Vec<Token>, index: &mut usize) -> Box<Node> {
+    let mut node = add(token_list, index);
+
+    'relational: loop {
+        if token_list[*index].is_reserved() {
+            if token_list[*index].get_reserved() == "<" {
+                *index += 1; //consume "<"
+                node = Node::new(ND_ADD, node, add(token_list, index));
+            } else if token_list[*index].get_reserved() == "<=" {
+                *index += 1; //consume "<="
+                node = Node::new(ND_SUB, node, add(token_list, index));
+            } else if token_list[*index].get_reserved() == ">" {
+                *index += 1; //consume ">"
+                node = Node::new(ND_SUB, node, add(token_list, index));
+            } else if token_list[*index].get_reserved() == ">=" {
+                *index += 1; //consume ">="
+                node = Node::new(ND_SUB, node, add(token_list, index));
+            } else {
+                break 'relational
+            }
+        } else {
+            break 'relational
+        }
+    }
+
+    node
+}
+
+fn add(token_list: &Vec<Token>, index: &mut usize) -> Box<Node> {
     let mut node = mul(token_list, index);
 
-    'expr: loop {
+    'add: loop {
         if token_list[*index].is_reserved() {
             if token_list[*index].get_reserved() == "+" {
                 *index += 1; //consume "+"
@@ -19,10 +69,10 @@ fn expr(token_list: &Vec<Token>, index: &mut usize) -> Box<Node> {
                 *index += 1; //consume "-"
                 node = Node::new(ND_SUB, node, mul(token_list, index));
             } else {
-                break 'expr
+                break 'add
             }
         } else {
-            break 'expr
+            break 'add
         }
     }
 
@@ -69,7 +119,7 @@ fn primary(token_list: &Vec<Token>, index: &mut usize) -> Box<Node> {
     if token_list[*index].is_reserved() {
         if token_list[*index].get_reserved() == "(" {
             *index += 1; //consume "("
-            let node = expr(token_list, index);
+            let node = add(token_list, index);
             if token_list[*index].get_reserved() == ")" {
                 *index += 1; //consume ")"
                 return node;

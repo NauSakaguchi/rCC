@@ -37,4 +37,11 @@ assert 1 "1 * -(-3 +1) /4 +1"
 
 assert 3 "1 * -3 * (-1)"
 
+#assert 0 "10 == 20"
+#assert 1 "10 != 20"
+#assert 0 "10 > 20"
+#assert 1 "10 < 20"
+#assert 1 "10 <= 20"
+#assert 0 "10 >= 20"
+
 echo OK
