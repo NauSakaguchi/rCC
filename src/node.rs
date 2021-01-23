@@ -1,4 +1,4 @@
-use crate::node::NodeKind::{ND_NUM, ND_ADD, ND_SUB, ND_MUL, ND_DIV, ND_EQ, ND_NEQ, ND_GT, ND_GTE, ND_LT, ND_LTE};
+use crate::node::NodeKind::{ND_NUM, ND_ADD, ND_SUB, ND_MUL, ND_DIV, ND_EQ, ND_NEQ, ND_GT, ND_GTE, ND_LT, ND_LTE, ND_ASSIGN, ND_LVAR};
 
 #[allow(non_camel_case_types)]
 pub enum NodeKind {
@@ -14,6 +14,9 @@ pub enum NodeKind {
     ND_GTE, // >=
     ND_LT, // <
     ND_LTE, // <=
+
+    ND_ASSIGN,
+    ND_LVAR,
 }
 
 pub struct Node {
@@ -92,6 +95,8 @@ impl Node {
             ND_GTE=> ND_GTE,
             ND_LT => ND_LT,
             ND_LTE=> ND_LTE,
+            ND_ASSIGN=> ND_ASSIGN,
+            ND_LVAR=> ND_LVAR,
         }
     }
 

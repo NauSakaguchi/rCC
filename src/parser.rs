@@ -1,10 +1,48 @@
 use crate::node::Node;
 use crate::token::Token;
-use crate::node::NodeKind::{ND_MUL, ND_DIV, ND_ADD, ND_SUB, ND_EQ, ND_NEQ, ND_GT, ND_GTE, ND_LT, ND_LTE};
+use crate::node::NodeKind::{ND_MUL, ND_DIV, ND_ADD, ND_SUB, ND_EQ, ND_NEQ, ND_GT, ND_GTE, ND_LT, ND_LTE, ND_ASSIGN};
 
-pub fn parse(token_list: &Vec<Token>) -> Box<Node> {
+pub fn parse(token_list: &Vec<Token>) -> Vec<Box<Node>> {
+    let mut nodes: Vec<Box<Node>> = Vec::with_capacity(100);
     let mut index: usize = 0;
-    equality(token_list, &mut index)
+
+    while !token_list[index].is_end() {
+        nodes.push(stmt(token_list, &mut index));
+    }
+
+    nodes
+}
+
+fn stmt(token_list: &Vec<Token>, index: &mut usize) -> Box<Node> {
+    let mut node = expr(token_list, index);
+
+    if token_list[*index].is_end() {
+        //nothing to do
+    }else if token_list[*index].get_reserved() == ";" {
+            *index += 1; //consume ";"
+    } else {
+            panic!("Expected \";\" or \"eof\", but got {} (TokenKind)", token_list[*index].get_kind_as_string());
+    }
+
+    node
+}
+
+fn expr(token_list: &Vec<Token>, index: &mut usize) -> Box<Node> {
+    let mut node = assign(token_list, index);
+    node
+}
+
+fn assign(token_list: &Vec<Token>, index: &mut usize) -> Box<Node> {
+    let mut node = equality(token_list, index);
+
+    if token_list[*index].is_reserved() {
+        if token_list[*index].get_reserved() == "=" {
+            *index += 1; //consume "="
+            node = Node::new(ND_ASSIGN, node, assign(token_list, index))
+        }
+    }
+
+    node
 }
 
 fn equality(token_list: &Vec<Token>, index: &mut usize) -> Box<Node> {

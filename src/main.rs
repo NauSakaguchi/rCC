@@ -23,7 +23,7 @@ fn main() {
     println!(".globl main");
     println!("main:");
 
-    generator::gen(&nodes);
+    generator::generator(&nodes);
 
     println!("\tpop rax");
     println!("\tret");
