@@ -46,4 +46,9 @@ assert 1 "10 <= 10"
 assert 0 "10 >= 20"
 assert 1 "10 >= 10"
 
+assert 1 "foo = 10; foo == 10;"
+assert 0 "foo = 10; foo < 10;"
+assert 30 "foo = 10; bar = 20; foo + bar;"
+assert 30 "foo = 10;bar = 20; foo + bar;"
+
 echo OK

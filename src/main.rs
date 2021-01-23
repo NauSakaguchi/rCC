@@ -2,8 +2,6 @@
 
 use std::env;
 use rCC::token::tokenize;
-// use rCC::node::{Node, NodeKind};
-// use rCC::token::TokenKind::TK_EOF;
 use rCC::{parser, generator};
 
 fn main() {
@@ -23,8 +21,17 @@ fn main() {
     println!(".globl main");
     println!("main:");
 
-    generator::generator(&nodes);
+    //prologue
+    //reserve for 26 variables (26 * 8 = 208)
+    println!("\tpush rbp");
+    println!("\tmov rbp, rsp");
+    println!("\tsub rsp, 208");
 
+    generator::generator(&nodes);
     println!("\tpop rax");
-    println!("\tret");
+
+
+    println!("\tmov rsp, rbp");
+    println!("\tpop rbp");
+    println!("\tret"); //return RAX value
 }

@@ -1,18 +1,19 @@
 #![allow(non_snake_case)]
 
-use crate::token::TokenKind::{TK_RESERVED, TK_NUM, TK_EOF};
+use crate::token::TokenKind::{*};
 
 #[allow(non_camel_case_types)]
 pub enum TokenKind {
     TK_RESERVED,
     TK_NUM,
     TK_EOF,
+    TK_IDENT,
 }
 
 pub struct Token {
     kind: TokenKind,
     val: Option<isize>,
-    reserved: Option<String>,
+    name: Option<String>,
 }
 
 impl Token {
@@ -20,7 +21,7 @@ impl Token {
         Self {
             kind: token_kind,
             val,
-            reserved: res,
+            name: res,
         }
     }
 
@@ -32,9 +33,16 @@ impl Token {
     }
 
     pub fn get_reserved(&self) -> &String {
-        match self.reserved.as_ref() {
+        match self.name.as_ref() {
             Some(x) => x,
             None => panic!("\n\nnote: Expected a reserved word, but no word to return.\nToken Kind: {}\n\n", self.get_kind_as_string()),
+        }
+    }
+
+    pub fn get_id(&self) -> String {
+        match self.name.as_ref() {
+            Some(x) => x.clone(),
+            None => panic!("\n\nnote: Expected ID, but no ID to return.\nToken Kind: {}\n\n", self.get_kind_as_string()),
         }
     }
 
@@ -43,6 +51,7 @@ impl Token {
             TK_EOF => "TK_EOF".to_string(),
             TK_NUM => "TK_NUM".to_string(),
             TK_RESERVED => "TK_RESERVED".to_string(),
+            TK_IDENT => "TK_IDENT".to_string(),
         }
     }
 
@@ -71,6 +80,12 @@ impl Token {
         }
     }
 
+    pub fn is_id(&self) -> bool {
+        match &self.kind {
+            TK_IDENT => true,
+            _ => false
+        }
+    }
 
 }
 
@@ -95,7 +110,7 @@ pub fn tokenize(program: &String) -> Vec<Token> {
             token_list.push(token);
         } else {
             index = consume_identifier(&mut word, &chars, index);
-            let token = Token::new(TK_RESERVED, None, Some(word.clone()));
+            let token = Token::new(TK_IDENT, None, Some(word.clone()));
             token_list.push(token);
         }
 
@@ -159,6 +174,7 @@ fn consume_reserved(word: &mut String, chars: &Vec<char>, mut index: usize) -> u
                         _ => return index
                     };
                 },
+                ';' => return index,
                 _ => return index,
             };
         },
@@ -178,6 +194,7 @@ fn is_reserved(ch: &char) -> bool {
         '<' => true,
         '(' => true,
         ')' => true,
+        ';' => true,
         _ => false,
     }
 }
@@ -189,7 +206,7 @@ fn consume_identifier(word: &mut String, chars: &Vec<char>, mut index: usize) ->
     'identifier: loop {
         match chars.get(index) {
             Some(x) => {
-                if !is_reserved(x) || *x != ' ' {
+                if !is_reserved(x) && *x != ' ' {
                     word.push(chars[index]);
                     index += 1;
                 } else {

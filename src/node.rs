@@ -1,4 +1,4 @@
-use crate::node::NodeKind::{ND_NUM, ND_ADD, ND_SUB, ND_MUL, ND_DIV, ND_EQ, ND_NEQ, ND_GT, ND_GTE, ND_LT, ND_LTE, ND_ASSIGN, ND_LVAR};
+use crate::node::NodeKind::{*};
 
 #[allow(non_camel_case_types)]
 pub enum NodeKind {
@@ -6,7 +6,7 @@ pub enum NodeKind {
     ND_SUB, // -
     ND_MUL, // *
     ND_DIV, // /
-    ND_NUM,
+    ND_NUM, // Numeric
 
     ND_EQ, // ==
     ND_NEQ, // !=
@@ -15,8 +15,8 @@ pub enum NodeKind {
     ND_LT, // <
     ND_LTE, // <=
 
-    ND_ASSIGN,
-    ND_LVAR,
+    ND_ASSIGN, // =
+    ND_LVAR, //local variable
 }
 
 pub struct Node {
@@ -24,6 +24,7 @@ pub struct Node {
     lhs: Option<Box<Node>>,
     rhs: Option<Box<Node>>,
     val: Option<isize>,
+    offset: Option<isize>,
 }
 
 impl Node {
@@ -33,6 +34,7 @@ impl Node {
             lhs: Option::from(lhs),
             rhs: Option::from(rhs),
             val: None,
+            offset: None,
         };
         Box::new(node)
     }
@@ -43,6 +45,18 @@ impl Node {
             lhs: None,
             rhs: None,
             val: Option::from(val),
+            offset: None,
+        };
+        Box::new(node)
+    }
+
+    pub fn new_lval(offset: isize) -> Box<Self> {
+        let node = Self{
+            kind: ND_LVAR,
+            lhs: None,
+            rhs: None,
+            val: None,
+            offset: Option::from(offset),
         };
         Box::new(node)
     }
@@ -97,6 +111,31 @@ impl Node {
             ND_LTE=> ND_LTE,
             ND_ASSIGN=> ND_ASSIGN,
             ND_LVAR=> ND_LVAR,
+        }
+    }
+
+    pub fn get_kind_as_string(&self) -> String {
+        match self.kind {
+            ND_NUM => "ND_NUM".to_string(),
+            ND_ADD => "ND_ADD".to_string(),
+            ND_SUB => "ND_SUB".to_string(),
+            ND_MUL => "ND_MUL".to_string(),
+            ND_DIV => "ND_DIV".to_string(),
+            ND_EQ => "ND_EQ".to_string(),
+            ND_NEQ=> "ND_NEQ".to_string(),
+            ND_GT=> "ND_GT".to_string(),
+            ND_GTE=> "ND_GTE".to_string(),
+            ND_LT => "ND_LT".to_string(),
+            ND_LTE=> "ND_LTE".to_string(),
+            ND_ASSIGN=> "ND_ASSIGN".to_string(),
+            ND_LVAR=> "ND_LVAR".to_string(),
+        }
+    }
+
+    pub fn get_offset(&self) -> isize {
+        match self.offset {
+            Some(x) => x,
+            None => panic!("This Node does NOT have offset, {} (NodeKind)", self.get_kind_as_string())
         }
     }
 

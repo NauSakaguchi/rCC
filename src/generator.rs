@@ -1,4 +1,4 @@
-use crate::node::NodeKind::{ND_NUM, ND_ADD, ND_SUB, ND_MUL, ND_DIV, ND_EQ, ND_NEQ, ND_GT, ND_GTE, ND_LT, ND_LTE, ND_ASSIGN, ND_LVAR};
+use crate::node::NodeKind::{*};
 use crate::node::Node;
 
 pub fn generator(nodes: &Vec<Box<Node>>) {
@@ -8,9 +8,28 @@ pub fn generator(nodes: &Vec<Box<Node>>) {
 }
 
 pub fn gen(node: &Box<Node>) {
-    if node.is_num() {
-        println!("\tpush {}", node.get_num());
-        return;
+    match node.get_kind() {
+        ND_NUM => {
+            println!("\tpush {}", node.get_num());
+            return;
+        }
+        ND_LVAR => {
+            gen_lval(node);
+            println!("\tpop rax");
+            println!("\tmov rax, [rax]");
+            println!("\tpush rax");
+            return;
+        }
+        ND_ASSIGN => {
+            gen_lval(node.get_lhs());
+            gen(node.get_rhs());
+
+            println!("\tpop rdi");
+            println!("\tpop rax");
+            println!("\tmov [rax], rdi");
+            println!("\tpush rdi");
+        }
+        _ => ()
     }
 
     gen(node.get_lhs());
@@ -57,10 +76,21 @@ pub fn gen(node: &Box<Node>) {
             println!("\tsetle al");
             println!("\tmovzb rax, al");
         },
-
-        _ => panic!("Unexpected node kind")
+        ND_ASSIGN | ND_LVAR => (),
+        _ => panic!("Unexpected node kind: {}", node.get_kind_as_string())
     }
 
     println!("\tpush rax");
 
+}
+
+fn gen_lval(node: &Box<Node>) {
+    match node.get_kind() {
+        ND_LVAR => {
+            println!("\tmov rax, rbp");
+            println!("\tsub rax, {}", node.get_offset());
+            println!("\tpush rax");
+        }
+        _ => panic!("Expected an variable on the left side of \"=\", but got {} (NodeKind)", node.get_kind_as_string())
+    }
 }
