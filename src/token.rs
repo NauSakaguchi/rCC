@@ -8,6 +8,7 @@ pub enum TokenKind {
     TK_NUM,
     TK_EOF,
     TK_IDENT,
+    TK_RETURN,
 }
 
 pub struct Token {
@@ -52,6 +53,7 @@ impl Token {
             TK_NUM => "TK_NUM".to_string(),
             TK_RESERVED => "TK_RESERVED".to_string(),
             TK_IDENT => "TK_IDENT".to_string(),
+            TK_RETURN => "TK_RETURN".to_string(),
         }
     }
 
@@ -87,6 +89,13 @@ impl Token {
         }
     }
 
+    pub fn is_return(&self) -> bool {
+        match &self.kind {
+            TK_RETURN => true,
+            _ => false
+        }
+    }
+
 }
 
 pub fn tokenize(program: &String) -> Vec<Token> {
@@ -109,9 +118,17 @@ pub fn tokenize(program: &String) -> Vec<Token> {
             let token = Token::new(TK_RESERVED, None, Some(word.clone()));
             token_list.push(token);
         } else {
-            index = consume_identifier(&mut word, &chars, index);
-            let token = Token::new(TK_IDENT, None, Some(word.clone()));
-            token_list.push(token);
+            index = consume_string(&mut word, &chars, index);
+            match &*word {
+                "return" => {
+                    let token = Token::new(TK_RETURN, None, None);
+                    token_list.push(token);
+                },
+                _ => {
+                    let token = Token::new(TK_IDENT, None, Some(word.clone()));
+                    token_list.push(token);
+                }
+            }
         }
 
         word.clear();
@@ -199,21 +216,21 @@ fn is_reserved(ch: &char) -> bool {
     }
 }
 
-fn consume_identifier(word: &mut String, chars: &Vec<char>, mut index: usize) -> usize {
+fn consume_string(word: &mut String, chars: &Vec<char>, mut index: usize) -> usize {
     word.push(chars[index]);
     index += 1;
 
-    'identifier: loop {
+    'string: loop {
         match chars.get(index) {
             Some(x) => {
                 if !is_reserved(x) && *x != ' ' {
                     word.push(chars[index]);
                     index += 1;
                 } else {
-                    break 'identifier
+                    break 'string
                 }
             },
-            None => break 'identifier,
+            None => break 'string,
         }
     }
     index

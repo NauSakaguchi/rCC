@@ -2,6 +2,7 @@ use crate::node::{Node, NodeKind};
 use crate::token::Token;
 use crate::lvar::LVar;
 use crate::node::NodeKind::{*};
+use crate::token::TokenKind::{*};
 
 pub fn parse(token_list: &Vec<Token>) -> Vec<Box<Node>> {
     let mut nodes: Vec<Box<Node>> = Vec::with_capacity(100);
@@ -16,7 +17,15 @@ pub fn parse(token_list: &Vec<Token>) -> Vec<Box<Node>> {
 }
 
 fn stmt(token_list: &Vec<Token>, index: &mut usize, l_vars: &mut Vec<Box<LVar>>) -> Box<Node> {
-    let mut node = expr(token_list, index, l_vars);
+    // let mut node = expr(token_list, index, l_vars);
+
+    let mut node = match token_list[*index].get_kind() {
+        TK_RETURN => {
+            *index += 1;
+            Node::new_return(expr(token_list, index, l_vars))
+        },
+        _ => expr(token_list, index, l_vars)
+    };
 
     if token_list[*index].is_end() {
         //nothing to do
@@ -30,8 +39,7 @@ fn stmt(token_list: &Vec<Token>, index: &mut usize, l_vars: &mut Vec<Box<LVar>>)
 }
 
 fn expr(token_list: &Vec<Token>, index: &mut usize, l_vars: &mut Vec<Box<LVar>>) -> Box<Node> {
-    let mut node = assign(token_list, index, l_vars);
-    node
+    assign(token_list, index, l_vars)
 }
 
 fn assign(token_list: &Vec<Token>, index: &mut usize, l_vars: &mut Vec<Box<LVar>>) -> Box<Node> {
@@ -217,6 +225,8 @@ mod tests {
 
     #[test]
     fn test_for_parser() {
+
+
         let mut index = 0;
         let args: Vec<String> = vec!["hoge".to_string(), "1 *2 + 3/ 4".to_string(), "+1".to_string()];
 

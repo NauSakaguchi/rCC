@@ -50,5 +50,11 @@ assert 1 "foo = 10; foo == 10;"
 assert 0 "foo = 10; foo < 10;"
 assert 30 "foo = 10; bar = 20; foo + bar;"
 assert 30 "foo = 10;bar = 20; foo + bar;"
+assert 4 "return 4;"
+assert 4 "return 4; return 5;"
+assert 30 "foo = 10; bar = 20; return foo + bar;"
+assert 30 "foo = 10; bar = 20; return foo + bar; return foo;"
 
 echo OK
+
+

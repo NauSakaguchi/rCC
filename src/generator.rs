@@ -9,6 +9,14 @@ pub fn generator(nodes: &Vec<Box<Node>>) {
 
 pub fn gen(node: &Box<Node>) {
     match node.get_kind() {
+        ND_RETURN => {
+            gen(node.get_lhs());
+            println!("\tpop rax");
+            println!("\tmov rsp, rbp");
+            println!("\tpop rbp");
+            println!("\tret");
+            return;
+        }
         ND_NUM => {
             println!("\tpush {}", node.get_num());
             return;

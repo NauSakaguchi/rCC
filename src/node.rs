@@ -17,6 +17,8 @@ pub enum NodeKind {
 
     ND_ASSIGN, // =
     ND_LVAR, //local variable
+
+    ND_RETURN,
 }
 
 pub struct Node {
@@ -60,6 +62,18 @@ impl Node {
         };
         Box::new(node)
     }
+
+    pub fn new_return(lhs: Box<Node>) -> Box<Self> {
+        let node = Self {
+            kind: ND_RETURN,
+            lhs: Option::from(lhs),
+            rhs: None,
+            val: None,
+            offset: None,
+        };
+        Box::new(node)
+    }
+
 
     pub fn has_lhs(&self) -> bool {
         match self.lhs {
@@ -111,6 +125,7 @@ impl Node {
             ND_LTE=> ND_LTE,
             ND_ASSIGN=> ND_ASSIGN,
             ND_LVAR=> ND_LVAR,
+            ND_RETURN=> ND_RETURN,
         }
     }
 
@@ -129,6 +144,7 @@ impl Node {
             ND_LTE=> "ND_LTE".to_string(),
             ND_ASSIGN=> "ND_ASSIGN".to_string(),
             ND_LVAR=> "ND_LVAR".to_string(),
+            ND_RETURN=> "ND_RETURN".to_string(),
         }
     }
 
