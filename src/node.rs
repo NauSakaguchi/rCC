@@ -27,7 +27,10 @@ pub enum NodeKind {
     ND_OTHER,
     ND_NONE,
 
-    ND_BLOCK
+    ND_BLOCK,
+
+    ND_CALL,
+    ND_FN,
 }
 
 pub struct Node {
@@ -36,6 +39,7 @@ pub struct Node {
     rhs: Option<Box<Node>>,
     val: Option<isize>,
     offset: Option<isize>,
+    name: Option<String>,
     block: Option<Box<Vec<Box<Node>>>>,
 }
 
@@ -47,6 +51,7 @@ impl Node {
             rhs: Option::from(rhs),
             val: None,
             offset: None,
+            name: None,
             block: None,
         };
         Box::new(node)
@@ -59,6 +64,7 @@ impl Node {
             rhs: None,
             val: Option::from(val),
             offset: None,
+            name: None,
             block: None,
         };
         Box::new(node)
@@ -71,6 +77,7 @@ impl Node {
             rhs: None,
             val: None,
             offset: Option::from(offset),
+            name: None,
             block: None,
         };
         Box::new(node)
@@ -83,6 +90,7 @@ impl Node {
             rhs: None,
             val: None,
             offset: None,
+            name: None,
             block: None,
         };
         Box::new(node)
@@ -95,6 +103,7 @@ impl Node {
             rhs,
             val: None,
             offset: None,
+            name: None,
             block: None,
         };
         Box::new(node)
@@ -107,6 +116,20 @@ impl Node {
             rhs: None,
             val: None,
             offset: None,
+            name: None,
+            block: None,
+        };
+        Box::new(node)
+    }
+
+    pub fn new_call(name: &String) -> Box<Self> {
+        let node = Self {
+            kind: ND_CALL,
+            lhs: None,
+            rhs: None,
+            val: None,
+            offset: None,
+            name: Option::from(name.clone()),
             block: None,
         };
         Box::new(node)
@@ -119,6 +142,7 @@ impl Node {
             rhs: None,
             val: None,
             offset: None,
+            name: None,
             block: Option::from(block),
         };
         Box::new(node)
@@ -166,6 +190,13 @@ impl Node {
         }
     }
 
+    pub fn get_name(&self) -> &String {
+        match self.name.as_ref() {
+            Some(x) => x,
+            None => panic!(),
+        }
+    }
+
     pub fn get_kind(&self) -> NodeKind {
         match self.kind {
             ND_NUM => ND_NUM,
@@ -188,6 +219,8 @@ impl Node {
             ND_OTHER => ND_OTHER,
             ND_NONE => ND_NONE,
             ND_BLOCK => ND_BLOCK,
+            ND_CALL => ND_CALL,
+            ND_FN => ND_FN,
         }
     }
 
@@ -213,6 +246,8 @@ impl Node {
             ND_OTHER => "ND_OTHER".to_string(),
             ND_NONE => "ND_NONE".to_string(),
             ND_BLOCK => "ND_BLOCK".to_string(),
+            ND_CALL => "ND_CALL".to_string(),
+            ND_FN => "ND_FN".to_string(),
         }
     }
 

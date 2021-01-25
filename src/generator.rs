@@ -26,6 +26,10 @@ pub fn gen(node: &Box<Node>, unique_number: &mut usize) {
             println!("\tpush {}", node.get_num());
             return;
         }
+        ND_CALL => {
+            println!("\tcall {}", node.get_name());
+            return;
+        }
         ND_LVAR => {
             gen_lval(node);
             println!("\tpop rax");

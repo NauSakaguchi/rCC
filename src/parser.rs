@@ -290,22 +290,32 @@ fn primary(token_list: &Vec<Token>, index: &mut usize, l_vars: &mut Vec<Box<LVar
     }
 
     if token_list[*index].is_id() {
-        let l_var_name = token_list[*index].get_id();
-        let l_var_index = find_lvar(&l_var_name, l_vars);
-        return match l_var_index {
-            Some(x) => {
-                let node = Node::new_lval(l_vars[x].get_offset());
-                *index += 1;
-                node
-            }
-            None => {
-                let l_var = LVar::new(l_var_name, l_vars.last().unwrap().get_offset() + 8);
-                let node = Node::new_lval(l_var.get_offset());
-                *index += 1;
-                l_vars.push(Box::from(l_var));
-                node
+        return if token_list[*index + 1].this_word_is("(") { // must be function call
+            let node = Node::new_call(&token_list[*index].get_id());
+            *index += 1; //consume "fn name"
+            *index += 1; //consume "("
+
+            *index += 1; //consume ")"
+            node
+        } else { // local variable
+            let l_var_name = token_list[*index].get_id();
+            let l_var_index = find_lvar(&l_var_name, l_vars);
+            match l_var_index {
+                Some(x) => {
+                    let node = Node::new_lval(l_vars[x].get_offset());
+                    *index += 1;
+                    node
+                }
+                None => {
+                    let l_var = LVar::new(l_var_name, l_vars.last().unwrap().get_offset() + 8);
+                    let node = Node::new_lval(l_var.get_offset());
+                    *index += 1;
+                    l_vars.push(Box::from(l_var));
+                    node
+                }
             }
         }
+
     }
 
     if token_list[*index].is_num() {

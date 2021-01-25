@@ -96,6 +96,33 @@ impl Token {
         }
     }
 
+    pub fn this_word_is(&self, str: &str) -> bool {
+        match &self.kind {
+            TK_RESERVED => {
+                return if &**self.get_reserved() == str {
+                    true
+                } else {
+                    false
+                }
+            }
+            TK_IDENT => {
+                return if &*self.get_id() == str {
+                    true
+                } else {
+                    false
+                }
+            }
+            TK_KEYWORD => {
+                return if &**self.get_keyword() == str {
+                    true
+                } else {
+                    false
+                }
+            }
+            _ => false
+        }
+    }
+
     pub fn is_num(&self) -> bool {
         match &self.kind {
             TK_NUM => true,
