@@ -31,6 +31,28 @@ fn stmt(token_list: &Vec<Token>, index: &mut usize, l_vars: &mut Vec<Box<LVar>>)
             st_node
         },
         TK_KEYWORD => new_keyword_node(token_list, index, l_vars),
+        TK_RESERVED => {
+            match &**token_list[*index].get_reserved() {
+                "{" => {
+                    *index += 1; //consume "{"
+                    let mut block_sentences = Vec::new();
+                    while !token_list[*index].is_block_end() {
+                        block_sentences.push(stmt(token_list, index, l_vars));
+                    }
+                    *index += 1; //consume "}"
+                    Node::new_block(Box::new(block_sentences))
+                }
+                _ => {
+                    let st_node = expr(token_list, index, l_vars);
+                    if token_list[*index].get_reserved() == ";" {
+                        *index += 1; //consume ";"
+                    } else {
+                        panic!("Expected \";\", but got {} (TokenKind)", token_list[*index].get_kind_as_string());
+                    }
+                    st_node
+                }
+            }
+        }
         _ => {
             let st_node = expr(token_list, index, l_vars);
             if token_list[*index].get_reserved() == ";" {

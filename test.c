@@ -35,5 +35,22 @@ else if (zero == 0)
 else
     g = 0;
 
+h = 0;
+if (zero == 0) {
+    h = h + 2;
+    h = h - 1;
+} else {
+    h = 0;
+}
+return h;
 
-return a == b == c == d == e == f == g;
+a1 = 0;
+if (zero != 0){
+    a1 = 0;
+} else {
+    a1 = 2;
+    a1 = a1 - 1;
+}
+
+
+return a == b == c == d == e == f == g == h == a1;

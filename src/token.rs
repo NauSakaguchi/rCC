@@ -84,6 +84,18 @@ impl Token {
         }
     }
 
+    pub fn is_block_end (&self) -> bool {
+        match &self.kind {
+            TK_RESERVED => {
+                return match &**self.get_reserved() {
+                    "}"=> true,
+                    _ => false
+                }
+            }
+            _ => false
+        }
+    }
+
     pub fn is_num(&self) -> bool {
         match &self.kind {
             TK_NUM => true,
@@ -200,6 +212,8 @@ fn consume_reserved(word: &mut String, chars: &Vec<char>, mut index: usize) -> u
                     };
                 },
                 ';' => return index,
+                '{' => return index,
+                '}' => return index,
                 _ => return index,
             };
         },
@@ -220,6 +234,8 @@ fn is_reserved(ch: &char) -> bool {
         '(' => true,
         ')' => true,
         ';' => true,
+        '{' => true,
+        '}' => true,
         _ => false,
     }
 }

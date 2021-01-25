@@ -26,6 +26,8 @@ pub enum NodeKind {
 
     ND_OTHER,
     ND_NONE,
+
+    ND_BLOCK
 }
 
 pub struct Node {
@@ -34,6 +36,7 @@ pub struct Node {
     rhs: Option<Box<Node>>,
     val: Option<isize>,
     offset: Option<isize>,
+    block: Option<Box<Vec<Box<Node>>>>,
 }
 
 impl Node {
@@ -44,6 +47,7 @@ impl Node {
             rhs: Option::from(rhs),
             val: None,
             offset: None,
+            block: None,
         };
         Box::new(node)
     }
@@ -55,6 +59,7 @@ impl Node {
             rhs: None,
             val: Option::from(val),
             offset: None,
+            block: None,
         };
         Box::new(node)
     }
@@ -66,6 +71,7 @@ impl Node {
             rhs: None,
             val: None,
             offset: Option::from(offset),
+            block: None,
         };
         Box::new(node)
     }
@@ -77,6 +83,7 @@ impl Node {
             rhs: None,
             val: None,
             offset: None,
+            block: None,
         };
         Box::new(node)
     }
@@ -88,6 +95,7 @@ impl Node {
             rhs,
             val: None,
             offset: None,
+            block: None,
         };
         Box::new(node)
     }
@@ -99,6 +107,19 @@ impl Node {
             rhs: None,
             val: None,
             offset: None,
+            block: None,
+        };
+        Box::new(node)
+    }
+
+    pub fn new_block(block: Box<Vec<Box<Node>>>) -> Box<Self> {
+        let node = Self {
+            kind: ND_BLOCK,
+            lhs: None,
+            rhs: None,
+            val: None,
+            offset: None,
+            block: Option::from(block),
         };
         Box::new(node)
     }
@@ -131,6 +152,13 @@ impl Node {
         }
     }
 
+    pub fn get_block(&self) -> &Vec<Box<Node>> {
+        match self.block.as_ref() {
+            Some(x) => &**x,
+            None => panic!(),
+        }
+    }
+
     pub fn get_num(&self) -> isize {
         match self.val {
             Some(x) => x,
@@ -159,6 +187,7 @@ impl Node {
             ND_FOR => ND_FOR,
             ND_OTHER => ND_OTHER,
             ND_NONE => ND_NONE,
+            ND_BLOCK => ND_BLOCK,
         }
     }
 
@@ -183,6 +212,7 @@ impl Node {
             ND_FOR => "ND_FOR".to_string(),
             ND_OTHER => "ND_OTHER".to_string(),
             ND_NONE => "ND_NONE".to_string(),
+            ND_BLOCK => "ND_BLOCK".to_string(),
         }
     }
 

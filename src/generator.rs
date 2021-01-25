@@ -9,6 +9,11 @@ pub fn generator(nodes: &Vec<Box<Node>>, unique_number: &mut usize) {
 
 pub fn gen(node: &Box<Node>, unique_number: &mut usize) {
     match node.get_kind() {
+        ND_BLOCK => {
+            generator(node.get_block(), unique_number);
+            println!("\tpop rax");
+            return;
+        }
         ND_RETURN => {
             gen(node.get_lhs(), unique_number);
             println!("\tpop rax");
