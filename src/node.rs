@@ -18,7 +18,14 @@ pub enum NodeKind {
     ND_ASSIGN, // =
     ND_LVAR, //local variable
 
-    ND_RETURN,
+    ND_RETURN, //return
+
+    ND_IF, // if
+    ND_WHILE, // while
+    ND_FOR, //for
+
+    ND_OTHER,
+    ND_NONE,
 }
 
 pub struct Node {
@@ -74,6 +81,27 @@ impl Node {
         Box::new(node)
     }
 
+    pub fn new_other(lhs: Option<Box<Node>>, rhs: Option<Box<Node>>) -> Box<Self> {
+        let node = Self {
+            kind: ND_OTHER,
+            lhs,
+            rhs,
+            val: None,
+            offset: None,
+        };
+        Box::new(node)
+    }
+
+    pub fn new_none() -> Box<Self> {
+        let node = Self {
+            kind: ND_NONE,
+            lhs: None,
+            rhs: None,
+            val: None,
+            offset: None,
+        };
+        Box::new(node)
+    }
 
     pub fn has_lhs(&self) -> bool {
         match self.lhs {
@@ -126,6 +154,11 @@ impl Node {
             ND_ASSIGN=> ND_ASSIGN,
             ND_LVAR=> ND_LVAR,
             ND_RETURN=> ND_RETURN,
+            ND_IF => ND_IF,
+            ND_WHILE => ND_WHILE,
+            ND_FOR => ND_FOR,
+            ND_OTHER => ND_OTHER,
+            ND_NONE => ND_NONE,
         }
     }
 
@@ -145,6 +178,11 @@ impl Node {
             ND_ASSIGN=> "ND_ASSIGN".to_string(),
             ND_LVAR=> "ND_LVAR".to_string(),
             ND_RETURN=> "ND_RETURN".to_string(),
+            ND_IF => "ND_IF".to_string(),
+            ND_WHILE => "ND_WHILE".to_string(),
+            ND_FOR => "ND_FOR".to_string(),
+            ND_OTHER => "ND_OTHER".to_string(),
+            ND_NONE => "ND_NONE".to_string(),
         }
     }
 

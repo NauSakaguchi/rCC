@@ -9,6 +9,7 @@ pub enum TokenKind {
     TK_EOF,
     TK_IDENT,
     TK_RETURN,
+    TK_KEYWORD
 }
 
 pub struct Token {
@@ -18,11 +19,11 @@ pub struct Token {
 }
 
 impl Token {
-    pub fn new(token_kind: TokenKind, val: Option<isize>, res: Option<String>) -> Self {
+    pub fn new(token_kind: TokenKind, val: Option<isize>, name: Option<String>) -> Self {
         Self {
             kind: token_kind,
             val,
-            name: res,
+            name,
         }
     }
 
@@ -47,6 +48,13 @@ impl Token {
         }
     }
 
+    pub fn get_keyword(&self) -> &String {
+        match self.name.as_ref() {
+            Some(x) => x,
+            None => panic!("\n\nnote: Expected KEYWORD, but no KEYWORD to return.\nToken Kind: {}\n\n", self.get_kind_as_string()),
+        }
+    }
+
     pub fn get_kind_as_string(&self) -> String {
         match self.kind {
             TK_EOF => "TK_EOF".to_string(),
@@ -54,6 +62,7 @@ impl Token {
             TK_RESERVED => "TK_RESERVED".to_string(),
             TK_IDENT => "TK_IDENT".to_string(),
             TK_RETURN => "TK_RETURN".to_string(),
+            TK_KEYWORD => "TK_KEYWORD".to_string(),
         }
     }
 
@@ -96,6 +105,13 @@ impl Token {
         }
     }
 
+    pub fn is_keyword(&self) -> bool {
+        match &self.kind {
+            TK_KEYWORD => true,
+            _ => false
+        }
+    }
+
 }
 
 pub fn tokenize(program: &String) -> Vec<Token> {
@@ -106,7 +122,7 @@ pub fn tokenize(program: &String) -> Vec<Token> {
     'tokenize: while index < chars.len() {
         let mut word = String::with_capacity(2);
 
-        if chars[index] == ' ' {
+        if chars[index] == ' ' || chars[index] == '\n'  {
             index += 1;
             continue 'tokenize
         } else if chars[index].is_numeric() {
@@ -119,16 +135,8 @@ pub fn tokenize(program: &String) -> Vec<Token> {
             token_list.push(token);
         } else {
             index = consume_string(&mut word, &chars, index);
-            match &*word {
-                "return" => {
-                    let token = Token::new(TK_RETURN, None, None);
-                    token_list.push(token);
-                },
-                _ => {
-                    let token = Token::new(TK_IDENT, None, Some(word.clone()));
-                    token_list.push(token);
-                }
-            }
+            token_list.push(classify_keyword_or_ident(&word));
+
         }
 
         word.clear();
@@ -223,7 +231,7 @@ fn consume_string(word: &mut String, chars: &Vec<char>, mut index: usize) -> usi
     'string: loop {
         match chars.get(index) {
             Some(x) => {
-                if !is_reserved(x) && *x != ' ' {
+                if !is_reserved(x) && *x != ' ' && *x != '\n' {
                     word.push(chars[index]);
                     index += 1;
                 } else {
@@ -236,3 +244,19 @@ fn consume_string(word: &mut String, chars: &Vec<char>, mut index: usize) -> usi
     index
 }
 
+fn classify_keyword_or_ident(word: &String) -> Token {
+    match &**word {
+        "return" => Token::new(TK_RETURN, None, None),
+
+        "if" => Token::new(TK_KEYWORD, None, Some(word.clone())),
+        "else" => Token::new(TK_KEYWORD, None, Some(word.clone())),
+        "for" => Token::new(TK_KEYWORD, None, Some(word.clone())),
+        "while" => Token::new(TK_KEYWORD, None, Some(word.clone())),
+        "continue" => Token::new(TK_KEYWORD, None, Some(word.clone())),
+        "break" => Token::new(TK_KEYWORD, None, Some(word.clone())),
+        "do" => Token::new(TK_KEYWORD, None, Some(word.clone())),
+        "goto" => Token::new(TK_KEYWORD, None, Some(word.clone())),
+
+        _ => Token::new(TK_IDENT, None, Some(word.clone()))
+    }
+}

@@ -1,16 +1,16 @@
 use crate::node::NodeKind::{*};
 use crate::node::Node;
 
-pub fn generator(nodes: &Vec<Box<Node>>) {
+pub fn generator(nodes: &Vec<Box<Node>>, unique_number: &mut usize) {
     for node in nodes{
-        gen(node);
+        gen(node, unique_number);
     }
 }
 
-pub fn gen(node: &Box<Node>) {
+pub fn gen(node: &Box<Node>, unique_number: &mut usize) {
     match node.get_kind() {
         ND_RETURN => {
-            gen(node.get_lhs());
+            gen(node.get_lhs(), unique_number);
             println!("\tpop rax");
             println!("\tmov rsp, rbp");
             println!("\tpop rbp");
@@ -30,7 +30,7 @@ pub fn gen(node: &Box<Node>) {
         }
         ND_ASSIGN => {
             gen_lval(node.get_lhs());
-            gen(node.get_rhs());
+            gen(node.get_rhs(), unique_number);
 
             println!("\tpop rdi");
             println!("\tpop rax");
@@ -40,8 +40,68 @@ pub fn gen(node: &Box<Node>) {
         _ => ()
     }
 
-    gen(node.get_lhs());
-    gen(node.get_rhs());
+    match node.get_kind() {
+        ND_WHILE => {
+            let number = *unique_number;
+            *unique_number += 1;
+            println!(".Lbegin{}:", number);
+            gen(node.get_lhs(), unique_number);
+            println!("\tpop rax");
+            println!("\tcmp rax, 0");
+            println!("\tje .Lend{}", number);
+            gen(node.get_rhs(), unique_number);
+            println!("\tjmp .Lbegin{}", number);
+            println!(".Lend{}:", number);
+        }
+        ND_FOR => {
+            let number = *unique_number;
+            *unique_number += 1;
+            match node.get_lhs().get_lhs().get_kind() {
+                ND_NONE => {}
+                _ => gen(node.get_lhs().get_lhs(), unique_number),
+                // _ => panic!("Unexpected kind: {}", node.get_lhs().get_lhs().get_kind_as_string()),
+            }
+            println!(".Lbegin{}:", number);
+            match node.get_lhs().get_rhs().get_kind() {
+                ND_NONE => {}
+                _ => gen(node.get_lhs().get_rhs(), unique_number),
+                // _ => panic!("Unexpected kind: {}", node.get_lhs().get_rhs().get_kind_as_string()),
+            }
+            println!("\tpop rax");
+            println!("\tcmp rax, 0");
+            println!("\tje .Lend{}", number);
+            gen(node.get_rhs().get_rhs(), unique_number);
+            match node.get_rhs().get_lhs().get_kind() {
+                ND_NONE => {}
+                _ => gen(node.get_rhs().get_lhs(), unique_number),
+                // _ => panic!("Unexpected kind: {}", node.get_rhs().get_lhs().get_kind_as_string()),
+            }
+            println!("\tjmp .Lbegin{}", number);
+            println!(".Lend{}:", number);
+        }
+        ND_IF => {
+            let number = *unique_number;
+            *unique_number += 1;
+            gen(node.get_lhs().get_lhs(), unique_number);
+            println!("\tpop rax");
+            println!("\tcmp rax, 0");
+            println!("\tje .Lelse{}", number);
+            gen(node.get_lhs().get_rhs(), unique_number);
+            println!("\tjmp .Lend{}", number);
+            println!(".Lelse{}:", number);
+            match node.get_rhs().get_kind() {
+                ND_NONE => {}
+                _ => gen(node.get_rhs(), unique_number),
+                // _ => panic!("Unexpected kind: {}", node.get_rhs().get_lhs().get_kind_as_string()),
+            }
+            println!(".Lend{}:", number);
+        }
+        _ => {
+            gen(node.get_lhs(), unique_number);
+            gen(node.get_rhs(), unique_number);
+        }
+    }
+
 
     println!("\tpop rdi");
     println!("\tpop rax");
@@ -84,8 +144,8 @@ pub fn gen(node: &Box<Node>) {
             println!("\tsetle al");
             println!("\tmovzb rax, al");
         },
-        ND_ASSIGN | ND_LVAR => (),
-        _ => panic!("Unexpected node kind: {}", node.get_kind_as_string())
+        _ => {},
+        // _ => panic!("Unexpected node kind: {}", node.get_kind_as_string())
     }
 
     println!("\tpush rax");

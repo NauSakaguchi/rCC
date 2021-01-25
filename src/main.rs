@@ -3,15 +3,25 @@
 use std::env;
 use rCC::token::tokenize;
 use rCC::{parser, generator};
+use std::fs::File;
+use std::io::Read;
 
 fn main() {
     let args: Vec<String> = env::args().collect(); // get input as command arguments
-    if args.len() == 1 {
-        eprintln!("Error: no argument!");
-        return ()
-    }
+    let mut unique_number:usize = 0;
 
-    let program = args[1..].join(" ");
+    let program = if args.len() == 1 { //if no argument, then compile test.c file
+        let filename = "test.c".to_string();
+        let mut file = File::open(filename)
+            .expect("file not found");
+        let mut contents = String::new();
+        file.read_to_string(&mut contents)
+            .expect("something went wrong reading the file");
+        contents
+    } else { // else compile the code in the arguments
+        args[1..].join(" ")
+    };
+
 
     let token_list = tokenize(&program);
     let nodes = parser::parse(&token_list);
@@ -27,7 +37,7 @@ fn main() {
     println!("\tmov rbp, rsp");
     println!("\tsub rsp, 208");
 
-    generator::generator(&nodes);
+    generator::generator(&nodes, &mut unique_number);
     println!("\tpop rax");
 
 

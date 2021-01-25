@@ -22,18 +22,106 @@ fn stmt(token_list: &Vec<Token>, index: &mut usize, l_vars: &mut Vec<Box<LVar>>)
     let mut node = match token_list[*index].get_kind() {
         TK_RETURN => {
             *index += 1;
-            Node::new_return(expr(token_list, index, l_vars))
+            let st_node = Node::new_return(expr(token_list, index, l_vars));
+            if token_list[*index].get_reserved() == ";" {
+                *index += 1; //consume ";"
+            } else {
+                panic!("Expected \";\", but got {} (TokenKind)", token_list[*index].get_kind_as_string());
+            }
+            st_node
         },
-        _ => expr(token_list, index, l_vars)
+        TK_KEYWORD => new_keyword_node(token_list, index, l_vars),
+        _ => {
+            let st_node = expr(token_list, index, l_vars);
+            if token_list[*index].get_reserved() == ";" {
+                *index += 1; //consume ";"
+            } else {
+                panic!("Expected \";\", but got {} (TokenKind)", token_list[*index].get_kind_as_string());
+            }
+            st_node
+        }
     };
 
-    if token_list[*index].is_end() {
-        //nothing to do
-    }else if token_list[*index].get_reserved() == ";" {
-            *index += 1; //consume ";"
-    } else {
-            panic!("Expected \";\" or \"eof\", but got {} (TokenKind)", token_list[*index].get_kind_as_string());
-    }
+    node
+}
+
+fn new_keyword_node(token_list: &Vec<Token>, index: &mut usize, l_vars: &mut Vec<Box<LVar>>) -> Box<Node> {
+    let node = match &**token_list[*index].get_keyword() {
+        "while" => {
+            *index += 1;
+            if token_list[*index].get_reserved() == "(" { *index += 1; } else { panic!() }
+            let lhs = expr(token_list, index, l_vars);
+            if token_list[*index].get_reserved() == ")" { *index += 1; } else { panic!() }
+            let rhs = stmt(token_list, index,l_vars);
+            Node::new(ND_WHILE, lhs, rhs)
+        },
+        "for" => {
+            *index += 1;
+            if token_list[*index].get_reserved() == "(" { *index += 1; } else { panic!() }
+            let a = match token_list[*index].get_kind() {
+                TK_RESERVED => {
+                    match &**token_list[*index].get_reserved() {
+                        ";" => Node::new_none(),
+                        _ => panic!("Expected \";\", but got {}", token_list[*index].get_reserved()),
+                    }
+                },
+                _ => expr(token_list, index, l_vars)
+            };
+
+            if token_list[*index].get_reserved() == ";" { *index += 1; } else { panic!() }
+            let b = match token_list[*index].get_kind() {
+                TK_RESERVED => {
+                    match &**token_list[*index].get_reserved() {
+                        ";" => Node::new_none(),
+                        _ => panic!("Expected \";\", but got {}", token_list[*index].get_reserved()),
+                    }
+                },
+                _ => expr(token_list, index, l_vars)
+            };
+
+            if token_list[*index].get_reserved() == ";" { *index += 1; } else { panic!() }
+            let c = match token_list[*index].get_kind() {
+                TK_RESERVED => {
+                    match &**token_list[*index].get_reserved() {
+                        ")" => Node::new_none(),
+                        _ => panic!("Expected \")\", but got {}", token_list[*index].get_reserved()),
+                    }
+                },
+                _ => expr(token_list, index, l_vars)
+            };
+
+            if token_list[*index].get_reserved() == ")" { *index += 1; } else { panic!() }
+            let d = stmt(token_list, index, l_vars);
+
+            let lhs = Node::new(ND_OTHER, a, b);
+            let rhs = Node::new(ND_OTHER, c, d);
+            Node::new(ND_FOR, lhs, rhs)
+        },
+        "if" => {
+            *index += 1;
+            if token_list[*index].get_reserved() == "(" { *index += 1; } else { panic!() }
+            let a = expr(token_list, index, l_vars);
+            if token_list[*index].get_reserved() == ")" { *index += 1; } else { panic!() }
+            let b = stmt(token_list, index,l_vars);
+            let lhs = Node::new(ND_OTHER, a, b);
+
+            let rhs = match token_list[*index].get_kind() {
+                TK_KEYWORD => {
+                    match &**token_list[*index].get_keyword() {
+                        "else" => {
+                            *index += 1;
+                            stmt(token_list, index,l_vars)
+                        },
+                        _ => Node::new_none()
+                    }
+                }
+                _ => Node::new_none()
+            };
+
+            Node::new(ND_IF, lhs, rhs)
+        },
+        _ => panic!("Unexpected keyword: {}", token_list[*index].get_keyword())
+    };
 
     node
 }
